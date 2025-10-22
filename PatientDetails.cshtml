@@ -1,0 +1,76 @@
+﻿@model ClinicalManagementSystem2025.Models.Patient
+@{
+    ViewData["Title"] = "Patient Details";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-user-injured"></i> Patient Details</h2>
+    <a href="@Url.Action("PatientList")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="patient-details-card">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="detail-group">
+                <label>Patient ID:</label>
+                <span>@Model.PatientId</span>
+            </div>
+            <div class="detail-group">
+                <label>Full Name:</label>
+                <span>@Model.PatientName</span>
+            </div>
+            <div class="detail-group">
+                <label>Gender:</label>
+                <span>@Model.Gender</span>
+            </div>
+            <div class="detail-group">
+                <label>Date of Birth:</label>
+                <span>@Model.DateOfBirth.ToString("MMM dd, yyyy")</span>
+            </div>
+            <div class="detail-group">
+                <label>Age:</label>
+                <span>@Model.Age years</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="detail-group">
+                <label>Phone:</label>
+                <span>@Model.Phone</span>
+            </div>
+            <div class="detail-group">
+                <label>Email:</label>
+                <span>@Model.Email</span>
+            </div>
+            <div class="detail-group">
+                <label>Blood Group:</label>
+                <span class="blood-group">@Model.BloodGroup</span>
+            </div>
+            <div class="detail-group">
+                <label>Emergency Contact:</label>
+                <span>@Model.EmergencyContact</span>
+            </div>
+            <div class="detail-group">
+                <label>Registration Date:</label>
+                <span>@Model.RegistrationDate.ToString("MMM dd, yyyy")</span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="detail-group">
+                <label>Address:</label>
+                <span>@Model.Address</span>
+            </div>
+        </div>
+    </div>
+</div>

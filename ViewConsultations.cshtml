@@ -1,0 +1,52 @@
+﻿@model List<ClinicalManagementSystem2025.Models.ConsultationViewModel>
+@{
+    ViewData["Title"] = "Saved Consultations";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="container">
+    <h2>Saved Consultations</h2>
+
+    @if (Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Diagnosis</th>
+                    <th>Medicines</th>
+                    <th>Lab Tests</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var consultation in Model)
+                {
+                    <tr>
+                        <td>@consultation.ConsultationId</td>
+                        <td>@consultation.Patient.PatientName</td>
+                        <td>@consultation.ConsultationDate.ToString("MMM dd, yyyy HH:mm")</td>
+                        <td>@consultation.Diagnosis</td>
+                        <td>@consultation.Medicines.Count</td>
+                        <td>@consultation.LabTests.Count</td>
+                        <td>
+                            <a href="@Url.Action("ConsultationDetails", new { id = consultation.ConsultationId })"
+                               class="btn btn-info btn-sm">View Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4>No Consultations Saved Yet</h4>
+            <p>Start by creating consultations from the dashboard.</p>
+        </div>
+    }
+
+    <a href="@Url.Action("Dashboard")" class="btn btn-primary">Back to Dashboard</a>
+</div>

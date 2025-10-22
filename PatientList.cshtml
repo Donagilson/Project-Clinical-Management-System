@@ -1,0 +1,68 @@
+﻿@model List<ClinicalManagementSystem2025.Models.Patient>
+@{
+    ViewData["Title"] = "Patient List";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-user-injured"></i> Patient List</h2>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped patient-table">
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Blood Group</th>
+                    <th>Registration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var patient in Model)
+                {
+                    <tr>
+                        <td>@patient.PatientId</td>
+                        <td>@patient.PatientName</td>
+                        <td>@patient.Gender</td>
+                        <td>@patient.Age</td>
+                        <td>@patient.Phone</td>
+                        <td>@patient.Email</td>
+                        <td>
+                            <span class="blood-group">@patient.BloodGroup</span>
+                        </td>
+                        <td>@patient.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <a href="@Url.Action("PatientDetails", new { id = patient.PatientId })"
+                               class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="no-patients">
+        <i class="fas fa-user-slash"></i>
+        <h4>No Patients Found</h4>
+        <p>There are no patients in the system yet.</p>
+    </div>
+}

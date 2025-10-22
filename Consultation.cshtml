@@ -1,0 +1,280 @@
+﻿@model ClinicalManagementSystem2025.Models.ConsultationViewModel
+@{
+    ViewData["Title"] = "Patient Consultation";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    var medicines = ViewBag.Medicines as List<ClinicalManagementSystem2025.Models.Medicine>;
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-stethoscope"></i> Patient Consultation</h2>
+    <a href="@Url.Action("Dashboard")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="consultation-container">
+    <!-- Patient Information -->
+    <div class="patient-info-card">
+        <h4>Patient Information</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Name:</strong> @Model.Patient.PatientName
+            </div>
+            <div class="col-md-4">
+                <strong>Age:</strong> @Model.Patient.Age years
+            </div>
+            <div class="col-md-4">
+                <strong>Gender:</strong> @Model.Patient.Gender
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <strong>Blood Group:</strong> <span class="blood-group">@Model.Patient.BloodGroup</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Phone:</strong> @Model.Patient.Phone
+            </div>
+            <div class="col-md-4">
+                <strong>Emergency Contact:</strong> @Model.Patient.EmergencyContact
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Consultation" method="post" id="consultationForm">
+        <input type="hidden" asp-for="AppointmentId" />
+        <input type="hidden" asp-for="DoctorId" />
+        <input type="hidden" asp-for="Patient.PatientId" />
+
+        <!-- Symptoms and Diagnosis -->
+        <div class="form-section">
+            <h4><i class="fas fa-clipboard-list"></i> Symptoms & Diagnosis</h4>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Symptoms">Symptoms & Observations *</label>
+                        <textarea asp-for="Symptoms" class="form-control" rows="3"
+                                  placeholder="Enter patient symptoms and observations..."></textarea>
+                        <span asp-validation-for="Symptoms" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Diagnosis">Diagnosis *</label>
+                        <textarea asp-for="Diagnosis" class="form-control" rows="3"
+                                  placeholder="Enter diagnosis..."></textarea>
+                        <span asp-validation-for="Diagnosis" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Notes">Additional Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2"
+                                  placeholder="Any additional notes..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicine Prescription -->
+        <div class="form-section">
+            <h4><i class="fas fa-pills"></i> Medicine Prescription</h4>
+            <div id="medicinesContainer">
+                @for (int i = 0; i < Model.Medicines.Count; i++)
+                {
+                    <div class="medicine-item card mb-2">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label>Medicine *</label>
+                                    <select asp-for="Medicines[i].MedicineId" class="form-control medicine-select">
+                                        <option value="">Select Medicine</option>
+                                        @foreach (var medicine in medicines)
+                                        {
+                                            <option value="@medicine.MedicineId">@medicine.MedicineName</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Medicines[i].MedicineId" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Dosage *</label>
+                                    <input asp-for="Medicines[i].Dosage" class="form-control" placeholder="e.g., 500mg" />
+                                    <span asp-validation-for="Medicines[i].Dosage" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Frequency *</label>
+                                    <input asp-for="Medicines[i].Frequency" class="form-control" placeholder="e.g., Twice daily" />
+                                    <span asp-validation-for="Medicines[i].Frequency" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Duration *</label>
+                                    <input asp-for="Medicines[i].Duration" class="form-control" placeholder="e.g., 5 days" />
+                                    <span asp-validation-for="Medicines[i].Duration" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Instructions</label>
+                                    <input asp-for="Medicines[i].Instructions" class="form-control" placeholder="Special instructions" />
+                                    <span asp-validation-for="Medicines[i].Instructions" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-sm remove-medicine">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <span asp-validation-for="Medicines" class="text-danger"></span>
+            <button type="button" id="addMedicine" class="btn btn-outline-primary mt-2">
+                <i class="fas fa-plus"></i> Add Medicine
+            </button>
+        </div>
+
+        <!-- Lab Tests -->
+        <div class="form-section">
+            <h4><i class="fas fa-flask"></i> Lab Tests</h4>
+            <div id="labTestsContainer">
+                @for (int i = 0; i < Model.LabTests.Count; i++)
+                {
+                    <div class="labtest-item card mb-2">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <label>Test Name *</label>
+                                    <input asp-for="LabTests[i].TestName" class="form-control" placeholder="e.g., Blood Test, X-Ray" />
+                                    <span asp-validation-for="LabTests[i].TestName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-5">
+                                    <label>Instructions *</label>
+                                    <input asp-for="LabTests[i].Instructions" class="form-control" placeholder="e.g., Fasting required, Specific preparation" />
+                                    <span asp-validation-for="LabTests[i].Instructions" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-sm remove-labtest">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <span asp-validation-for="LabTests" class="text-danger"></span>
+            <button type="button" id="addLabTest" class="btn btn-outline-primary mt-2">
+                <i class="fas fa-plus"></i> Add Lab Test
+            </button>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Save Consultation
+            </button>
+            <a href="@Url.Action("Dashboard")" class="btn btn-secondary btn-lg">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Add Medicine
+        $('#addMedicine').click(function () {
+            var index = $('#medicinesContainer .medicine-item').length;
+            var html = `
+                <div class="medicine-item card mb-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label>Medicine *</label>
+                                <select name="Medicines[${index}].MedicineId" class="form-control medicine-select">
+                                    <option value="">Select Medicine</option>
+        @foreach (var medicine in medicines)
+        {
+            <text><option value="@medicine.MedicineId">@medicine.MedicineName</option></text>
+        }
+                                </select>
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Medicines[${index}].MedicineId" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Dosage *</label>
+                                <input name="Medicines[${index}].Dosage" class="form-control" placeholder="e.g., 500mg" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Medicines[${index}].Dosage" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Frequency *</label>
+                                <input name="Medicines[${index}].Frequency" class="form-control" placeholder="e.g., Twice daily" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Medicines[${index}].Frequency" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Duration *</label>
+                                <input name="Medicines[${index}].Duration" class="form-control" placeholder="e.g., 5 days" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Medicines[${index}].Duration" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Instructions</label>
+                                <input name="Medicines[${index}].Instructions" class="form-control" placeholder="Special instructions" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Medicines[${index}].Instructions" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-1">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-danger btn-sm remove-medicine">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('#medicinesContainer').append(html);
+        });
+
+        // Add Lab Test
+        $('#addLabTest').click(function () {
+            var index = $('#labTestsContainer .labtest-item').length;
+            var html = `
+                <div class="labtest-item card mb-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label>Test Name *</label>
+                                <input name="LabTests[${index}].TestName" class="form-control" placeholder="e.g., Blood Test, X-Ray" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="LabTests[${index}].TestName" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-5">
+                                <label>Instructions *</label>
+                                <input name="LabTests[${index}].Instructions" class="form-control" placeholder="e.g., Fasting required, Specific preparation" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="LabTests[${index}].Instructions" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-danger btn-sm remove-labtest">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('#labTestsContainer').append(html);
+        });
+
+        // Remove Medicine
+        $(document).on('click', '.remove-medicine', function () {
+            $(this).closest('.medicine-item').remove();
+        });
+
+        // Remove Lab Test
+        $(document).on('click', '.remove-labtest', function () {
+            $(this).closest('.labtest-item').remove();
+        });
+    </script>
+}

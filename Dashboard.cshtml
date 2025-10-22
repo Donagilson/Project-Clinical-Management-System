@@ -1,0 +1,112 @@
+﻿@model List<ClinicalManagementSystem2025.Models.Appointment>
+@{
+    ViewData["Title"] = "Doctor Dashboard";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="dashboard-header">
+    <h2><i class="fas fa-tachometer-alt"></i> Doctor Dashboard</h2>
+    <p>Welcome, @ViewBag.DoctorName - @ViewBag.Specialization</p>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@ViewBag.TodayAppointmentsCount</h3>
+                <p>Today's Appointments</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-week"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@ViewBag.WeeklyAppointmentsCount</h3>
+                <p>Weekly Appointments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="appointments-section">
+    <h3><i class="fas fa-list"></i> Today's Appointments</h3>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped appointment-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient Name</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                        <th>Phone</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in Model)
+                    {
+                        <tr>
+                            <td>@appointment.AppointmentTime.ToString("hh:mm tt")</td>
+                            <td>@appointment.PatientName</td>
+                            <td>@appointment.Gender</td>
+                            <td>@appointment.Age</td>
+                            <td>@appointment.Phone</td>
+                            <td>@appointment.Reason</td>
+                            <td>
+                                <span class="status-badge status-@appointment.Status.ToLower()">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="@Url.Action("Consultation", new { id = appointment.AppointmentId })"
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-stethoscope"></i> Consult
+                                    </a>
+                                    @if (appointment.Status == "Scheduled")
+                                    {
+                                        <form asp-action="UpdateAppointmentStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                            <input type="hidden" name="status" value="Completed" />
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Complete
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="no-appointments">
+            <i class="fas fa-calendar-times"></i>
+            <h4>No appointments for today</h4>
+            <p>You don't have any scheduled appointments for today.</p>
+        </div>
+    }
+</div>
