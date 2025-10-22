@@ -1,0 +1,313 @@
+﻿@{
+    ViewData["Title"] = "Receptionist Dashboard";
+    var todaysAppointments = ViewBag.TodaysAppointments as IEnumerable<Appointment>;
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-olive">
+            <i class="fas fa-tachometer-alt me-2"></i>Receptionist Dashboard
+        </h1>
+        <div class="text-muted">
+            <i class="fas fa-calendar-day me-1"></i>@DateTime.Now.ToString("dddd, MMMM dd, yyyy")
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-olive">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x text-olive mb-3"></i>
+                    <h5 class="card-title text-olive">Search Patient</h5>
+                    <p class="card-text">Find existing patients by ID, name, or phone</p>
+                    <button class="btn btn-olive" data-bs-toggle="modal" data-bs-target="#searchPatientModal">
+                        <i class="fas fa-search me-1"></i>Search Patient
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-olive">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus fa-3x text-olive mb-3"></i>
+                    <h5 class="card-title text-olive">Add New Patient</h5>
+                    <p class="card-text">Register a new patient in the system</p>
+                    <a asp-action="AddPatient" class="btn btn-olive">
+                        <i class="fas fa-user-plus me-1"></i>Add Patient
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-olive">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-plus fa-3x text-olive mb-3"></i>
+                    <h5 class="card-title text-olive">Quick Schedule</h5>
+                    <p class="card-text">Schedule appointment for existing patient</p>
+                    <button class="btn btn-olive" data-bs-toggle="modal" data-bs-target="#quickScheduleModal">
+                        <i class="fas fa-calendar-plus me-1"></i>Quick Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Appointments -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-olive text-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-calendar-day me-2"></i>Today's Appointments
+            </h5>
+            <span class="badge bg-light text-olive">@todaysAppointments?.Count() appointments</span>
+        </div>
+        <div class="card-body">
+            @if (todaysAppointments?.Any() == true)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="bg-olive text-white">
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Phone</th>
+                                <th>Doctor</th>
+                                <th>Specialization</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var appointment in todaysAppointments)
+                            {
+                                <tr>
+                                    <td>@appointment.AppointmentDate.ToString("hh:mm tt")</td>
+                                    <td>
+                                        <strong>@appointment.PatientName</strong>
+                                        <br><small class="text-muted">@appointment.AppointmentCode</small>
+                                    </td>
+                                    <td>@appointment.PatientPhone</td>
+                                    <td>@appointment.DoctorName</td>
+                                    <td>@appointment.Specialization</td>
+                                    <td>
+                                        <span class="badge @(appointment.Status == "Scheduled" ? "bg-primary" :
+                                                                                                        appointment.Status == "Completed" ? "bg-success" :
+                                                                                                        appointment.Status == "Cancelled" ? "bg-danger" : "bg-warning")">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td>@appointment.Reason</td>
+                        </tr>
+                                                }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No appointments scheduled for today</h5>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Search Patient Modal -->
+<div class="modal fade" id="searchPatientModal" tabindex="-1" aria-labelledby="searchPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-olive text-white">
+                <h5 class="modal-title" id="searchPatientModalLabel">
+                    <i class="fas fa-search me-2"></i>Search Patient
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="searchTerm" class="form-label">Search by Phone Number, Name, or Email</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchTerm" placeholder="Enter phone number, name, or email">
+                        <button class="btn btn-olive" type="button" id="btnSearch">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                    </div>
+                </div>
+
+                <div id="searchResults" class="mt-3">
+                    <!-- Search results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Schedule Modal -->
+<div class="modal fade" id="quickScheduleModal" tabindex="-1" aria-labelledby="quickScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-olive text-white">
+                <h5 class="modal-title" id="quickScheduleModalLabel">
+                    <i class="fas fa-calendar-plus me-2"></i>Quick Schedule by Phone
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="phoneSearch" class="form-label">Enter Patient Phone Number</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="phoneSearch" placeholder="Enter phone number">
+                        <button class="btn btn-olive" type="button" id="btnPhoneSearch">
+                            <i class="fas fa-search me-1"></i>Find Patient
+                        </button>
+                    </div>
+                </div>
+
+                <div id="phoneSearchResult" class="mt-3">
+                    <!-- Phone search result will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search Patient
+        $('#btnSearch').click(function() {
+            var searchTerm = $('#searchTerm').val();
+            if (!searchTerm) {
+                alert('Please enter search term');
+                return;
+            }
+
+            $('#searchResults').html('<div class="text-center"><div class="spinner-border text-olive" role="status"></div><p>Searching...</p></div>');
+
+            $.post('@Url.Action("SearchPatient", "Receptionist")', { searchTerm: searchTerm })
+                .done(function(response) {
+                    if (response.success) {
+                        if (response.patients.length > 0) {
+                            var html = '<div class="list-group">';
+                            response.patients.forEach(function(patient) {
+                                html += `
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">${patient.fullName}</h6>
+                                            <small>ID: ${patient.patientId}</small>
+                                        </div>
+                                        <p class="mb-1">Phone: ${patient.phoneNumber}</p>
+                                        <p class="mb-1">Gender: ${patient.gender || 'N/A'} | Age: ${patient.age || 'N/A'}</p>
+                                        <small>Email: ${patient.email || 'N/A'}</small>
+                                        <div class="mt-2">
+                                            <a href="/Receptionist/PatientDetails/${patient.patientId}" class="btn btn-sm btn-outline-olive me-1">
+                                                <i class="fas fa-eye"></i> View Details
+                                            </a>
+                                            <a href="/Receptionist/ScheduleAppointment/${patient.patientId}" class="btn btn-sm btn-olive">
+                                                <i class="fas fa-calendar-plus"></i> Schedule
+                                            </a>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                            $('#searchResults').html(html);
+                        } else {
+                            $('#searchResults').html('<div class="alert alert-warning">No patients found. <a href="/Receptionist/AddPatient" class="alert-link">Add new patient</a></div>');
+                        }
+                    } else {
+                        $('#searchResults').html('<div class="alert alert-danger">' + response.message + '</div>');
+                    }
+                })
+                .fail(function() {
+                    $('#searchResults').html('<div class="alert alert-danger">Error searching patients</div>');
+                });
+        });
+
+        // Quick Schedule by Phone
+        $('#btnPhoneSearch').click(function() {
+            var phoneNumber = $('#phoneSearch').val();
+            if (!phoneNumber) {
+                alert('Please enter phone number');
+                return;
+            }
+
+            $('#phoneSearchResult').html('<div class="text-center"><div class="spinner-border text-olive" role="status"></div><p>Searching...</p></div>');
+
+            $.get('@Url.Action("GetPatientByPhone", "Receptionist")', { phoneNumber: phoneNumber })
+                .done(function(response) {
+                    if (response.success) {
+                        var patient = response.patient;
+                        var html = `
+                            <div class="alert alert-success">
+                                <h6>Patient Found:</h6>
+                                <p><strong>${patient.fullName}</strong><br>
+                                Phone: ${patient.phoneNumber}<br>
+                                Email: ${patient.email || 'N/A'}<br>
+                                Gender: ${patient.gender || 'N/A'} | Age: ${patient.age || 'N/A'}</p>
+                                <div class="mt-2">
+                                    <a href="/Receptionist/PatientDetails/${patient.patientId}" class="btn btn-outline-olive btn-sm me-1">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                    <a href="/Receptionist/ScheduleAppointment/${patient.patientId}" class="btn btn-olive btn-sm">
+                                        <i class="fas fa-calendar-plus"></i> Schedule Appointment
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        $('#phoneSearchResult').html(html);
+                    } else {
+                        var html = `
+                            <div class="alert alert-warning">
+                                ${response.message}
+                                <div class="mt-2">
+                                    <a href="/Receptionist/AddPatient?phoneNumber=${encodeURIComponent(phoneNumber)}" class="btn btn-olive btn-sm">
+                                        <i class="fas fa-user-plus me-1"></i>Add New Patient
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        $('#phoneSearchResult').html(html);
+                    }
+                })
+                .fail(function() {
+                    $('#phoneSearchResult').html('<div class="alert alert-danger">Error searching patient</div>');
+                });
+        });
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+
+        // Enter key support for search
+        $('#searchTerm').keypress(function(e) {
+            if (e.which == 13) {
+                $('#btnSearch').click();
+            }
+        });
+
+        $('#phoneSearch').keypress(function(e) {
+            if (e.which == 13) {
+                $('#btnPhoneSearch').click();
+            }
+        });
+    </script>
+}

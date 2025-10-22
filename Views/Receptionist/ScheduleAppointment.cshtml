@@ -1,0 +1,211 @@
+﻿@model ClinicalManagementSystem2025.Models.Appointment
+@{
+    ViewData["Title"] = "Schedule Appointment";
+    var patient = ViewBag.Patient as Patient;
+    var departments = ViewBag.Departments as IEnumerable<Department>;
+    var doctors = ViewBag.Doctors as IEnumerable<Doctor>;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-olive">
+            <i class="fas fa-calendar-plus me-2"></i>Schedule Appointment
+        </h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-olive">
+        <div class="card-header bg-olive text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-user-clock me-2"></i>Appointment Details
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <!-- Patient Info -->
+            <div class="card mb-4 border-olive">
+                <div class="card-body">
+                    <h6 class="text-olive">
+                        <i class="fas fa-user me-2"></i>Patient Information
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> @patient.FullName</p>
+                            @* <p><strong>Phone:</strong> @patient.PhoneNumber</p> *@
+                            <p><strong>Age:</strong> @patient.Age years</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Gender:</strong> @patient.Gender</p>
+                            <p><strong>Blood Group:</strong> @patient.BloodGroup</p>
+                            <p><strong>Email:</strong> @patient.Email</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" asp-action="ScheduleAppointment">
+                <input type="hidden" asp-for="PatientId" value="@patient.PatientId" />
+                <input type="hidden" asp-for="AppointmentCode" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <!-- Doctor Selection -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Department</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-hospital"></i></span>
+                            <select class="form-control" id="departmentSelect">
+                                <option value="">-- All Departments --</option>
+                                @foreach (var department in departments)
+                                {
+                                    <option value="@department.DepartmentId">@department.DepartmentName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DoctorId" class="form-label fw-bold">Select Doctor *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-user-md"></i></span>
+                            <select asp-for="DoctorId" class="form-control" id="doctorSelect" required>
+                                <option value="">-- Select Doctor --</option>
+                                @foreach (var doctor in doctors)
+                                {
+                                    <option value="@doctor.DoctorId"
+                                            data-fee="@doctor.ConsultationFee"
+                                            data-from="@doctor.AvailableFrom"
+                                            data-to="@doctor.AvailableTo">
+                                        Dr. @doctor.DoctorName - @doctor.Specialization
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="DoctorId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Fee & Hours -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Consultation Fee</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-money-bill-wave"></i></span>
+                            <input type="text" class="form-control" id="consultationFee" readonly value="Select doctor to see fee">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Available Hours</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-clock"></i></span>
+                            <input type="text" class="form-control" id="availableHours" readonly value="Select doctor to see availability">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment Timing -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="AppointmentDate" class="form-label fw-bold">Appointment Date & Time *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-calendar"></i></span>
+                            <input asp-for="AppointmentDate" type="datetime-local" class="form-control"
+                                   min="@ViewBag.MinDate" max="@ViewBag.MaxDate" required />
+                        </div>
+                        <span asp-validation-for="AppointmentDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DurationMinutes" class="form-label fw-bold">Duration (minutes) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-olive text-white"><i class="fas fa-clock"></i></span>
+                            <select asp-for="DurationMinutes" class="form-control">
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">60 minutes</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="DurationMinutes" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="mb-3">
+                    <label asp-for="Reason" class="form-label fw-bold">Reason for Visit *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-olive text-white"><i class="fas fa-stethoscope"></i></span>
+                        <input asp-for="Reason" class="form-control" placeholder="Enter reason for visit" required />
+                    </div>
+                    <span asp-validation-for="Reason" class="text-danger small"></span>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-4">
+                    <label asp-for="Notes" class="form-label fw-bold">Additional Notes</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-olive text-white"><i class="fas fa-notes-medical"></i></span>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Enter any additional notes"></textarea>
+                    </div>
+                    <span asp-validation-for="Notes" class="text-danger small"></span>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-olive">
+                        <i class="fas fa-calendar-check me-1"></i>Schedule Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Department filter logic
+        $('#departmentSelect').change(function () {
+            const departmentId = $(this).val();
+            const $doctorSelect = $('#doctorSelect');
+            $doctorSelect.html('<option>-- Loading doctors --</option>');
+
+            if (departmentId) {
+                $.get('@Url.Action("GetDoctorsByDepartment", "Receptionist")', { departmentId })
+                    .done(response => {
+                        if (response.success) {
+                            let options = '<option value="">-- Select Doctor --</option>';
+                            response.doctors.forEach(d => {
+                                options += `<option value="${d.doctorId}" data-fee="${d.consultationFee}" data-from="${d.availableFrom}" data-to="${d.availableTo}">Dr. ${d.doctorName}</option>`;
+                            });
+                            $doctorSelect.html(options);
+                        } else $doctorSelect.html('<option>-- Error loading doctors --</option>');
+                    })
+                    .fail(() => $doctorSelect.html('<option>-- Error loading doctors --</option>'));
+            }
+        });
+
+        // Show fee & availability
+        $('#doctorSelect').change(function () {
+            const selected = $(this).find('option:selected');
+            $('#consultationFee').val(selected.data('fee') ? `₹${selected.data('fee')}` : 'Select doctor to see fee');
+            $('#availableHours').val(selected.data('from') && selected.data('to')
+                ? `${selected.data('from')} - ${selected.data('to')}`
+                : 'Select doctor to see availability');
+        });
+
+        // Date validation
+        $('input[type="datetime-local"]').change(function () {
+            const selectedDate = new Date($(this).val());
+            const today = new Date();
+            if (selectedDate.toDateString() === today.toDateString()) {
+                const minTime = today.toISOString().slice(0, 16);
+                $(this).attr('min', minTime);
+            }
+        });
+    </script>
+}
